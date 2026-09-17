@@ -8,19 +8,34 @@ typedef unsigned int Hash;
 
 namespace Game
 {
-	inline auto Device = (LPDIRECT3DDEVICE9*)0x00870974;
-	inline auto& Window = *(HWND*)0x00870990;
-	inline auto DrawFE = true;
-	inline auto ForceRain = (bool*)0x008A1D38;
-	inline auto& Speed = *(float*)0x007A5730;
-	inline auto FrontSteerAngle = (float*)0x007F45A4;
-	inline auto& CarLod = *(int*)0x00802728;
-	inline auto& TireLOD = *(int*)0x0080272C;
-	inline auto& State = *(int*)0x008654A4;
-	inline auto NotInFocus = (bool*)0x008709E0;
-	inline float& DeltaTime = *(float*)0x00865198;
+	inline auto Device = (LPDIRECT3DDEVICE9*)0x0073636C;
+	inline auto& Window = *(HWND*)0x00736380;
+	inline auto& DrawFE = *(bool*)0x006F9228;
+	inline auto& Speed = *(float*)0x006B7994;
+	inline auto& CarLod = *(int*)0x006F1B30;
+	inline auto& TireLOD = *(int*)0x006F1B34;
+	inline auto& State = *(int*)0x0077A920;
+	inline auto NotInFocus = (bool*)0x007363B6;
+	inline float& DeltaTime = *(float*)0x0073AD38;
 
-	inline auto eCreateLookAtMatrix = (int(__cdecl*)(void*, void*, void*, void*))0x005BA9A0;
+	inline void* LookAtTarget = (void*)0x0040B780;
+	inline void __declspec(naked) eCreateLookAtMatrix(void*, void*, void*, void*)
+	{
+		__asm
+		{
+			push edi;
+			push esi;
+			mov esi, [esp + 0Ch];
+			mov edi, [esp + 10h];
+			mov eax, [esp + 14h];
+			push dword ptr[esp + 18h];
+			call dword ptr[LookAtTarget];
+			add esp, 4;
+			pop esi;
+			pop edi;
+			ret;
+		}
+	}
 
 	inline bool InFocus()
 	{
@@ -65,5 +80,5 @@ namespace Game
 		CameraParams CurrentKey;
 	};
 
-	inline auto PlayerCamera = (Camera*)0x008760e0;
+	inline auto PlayerCamera = (Camera*)0x0078d270;
 }

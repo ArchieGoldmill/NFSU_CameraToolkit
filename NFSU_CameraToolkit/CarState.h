@@ -1,9 +1,21 @@
 #pragma once
 
+void* GetCarByDriverNumber(int driverNumber)
+{
+	void* result;
+
+	__asm {
+		mov edi, driverNumber
+		mov eax, 0x0041FFE0;
+		call eax;
+		mov result, eax
+	}
+
+	return result;
+}
+
 struct CarState
 {
-	inline static CarState*& Player = *(CarState**)0x0089CCF8;
-
 	int field_0;
 	int field_4;
 	int field_8;
@@ -29,4 +41,10 @@ struct CarState
 	XMVECTOR unk2;
 	XMVECTOR unk3;
 	XMMATRIX Matrix;
+
+	inline static CarState* GetPlayer()
+	{
+		auto playerCarNumber = (int*)0x0078A410;
+		return (CarState*)GetCarByDriverNumber(playerCarNumber[0]);
+	}
 };

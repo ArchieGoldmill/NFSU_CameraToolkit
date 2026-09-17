@@ -82,6 +82,20 @@ void InitUI(LPDIRECT3DDEVICE9 pDevice)
 	}
 }
 
+void UpdateImGuiMouse()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	POINT pos;
+	GetCursorPos(&pos);
+	ScreenToClient(Game::Window, &pos);
+	io.AddMousePosEvent((float)pos.x, (float)pos.y);
+
+	io.AddMouseButtonEvent(0, (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0);
+	io.AddMouseButtonEvent(1, (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0);
+	io.AddMouseButtonEvent(2, (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0);
+}
+
 HRESULT __stdcall hookedEndScene(LPDIRECT3DDEVICE9 pDevice)
 {
 	InitUI(pDevice);
@@ -90,6 +104,8 @@ HRESULT __stdcall hookedEndScene(LPDIRECT3DDEVICE9 pDevice)
 	{
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
+
+		UpdateImGuiMouse();
 
 		UI::Draw();
 
@@ -148,17 +164,19 @@ XMMATRIX* GetCarTransform()
 
 	if (Game::State == 6)
 	{
-		carMatrix = CarState::Player->Matrix;
-		carMatrix.r[3] = CarState::Player->Position;
+		auto carState = CarState::GetPlayer();
+
+		carMatrix = carState->Matrix;
+		carMatrix.r[3] = carState->Position;
 		carMatrix.r[3].m128_f32[3] = 1;
 	}
 
 	return &carMatrix;
 }
 
-typedef void(__thiscall* tSetCameraMatrix)(Game::Camera*, XMMATRIX*, float);
+typedef void(__stdcall* tSetCameraMatrix)(Game::Camera*, XMMATRIX*, float);
 tSetCameraMatrix oSetCameraMatrix;
-void __fastcall hSetCameraMatrix(Game::Camera* camera, int edx, XMMATRIX* matrix, float elapsed)
+void __stdcall hSetCameraMatrix(Game::Camera* camera, XMMATRIX* matrix, float elapsed)
 {
 	if (camera == Game::PlayerCamera)
 	{
@@ -213,11 +231,11 @@ void Init()
 
 	MH_CreateHook(vt[16], hookedReset, (LPVOID*)&oReset);
 	MH_CreateHook(vt[42], hookedEndScene, (LPVOID*)&oEndScene);
-	MH_CreateHook((LPVOID)0x00447280, hSetCameraMatrix, (LPVOID*)&oSetCameraMatrix);
+	MH_CreateHook((LPVOID)0x0047D070, hSetCameraMatrix, (LPVOID*)&oSetCameraMatrix);
 
 	MH_EnableHook(MH_ALL_HOOKS);
 
-	injector::WriteMemory<bool*>(0x005378C1, &Game::DrawFE);
+	Utilities::UnprotectMemmory((void*)0x006B7994, 8);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID)
@@ -228,7 +246,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID)
 		IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)(base);
 		IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)(base + dos->e_lfanew);
 
-		if ((base + nt->OptionalHeader.AddressOfEntryPoint + (0x400000 - base)) == 0x75BCC7) // Check if .exe file is compatible - Thanks to thelink2012 and MWisBest
+		if ((base + nt->OptionalHeader.AddressOfEntryPoint + (0x400000 - base)) == 0x670CB5) // Check if .exe file is compatible - Thanks to thelink2012 and MWisBest
 		{
 			Globals::DllHandle = hModule;
 

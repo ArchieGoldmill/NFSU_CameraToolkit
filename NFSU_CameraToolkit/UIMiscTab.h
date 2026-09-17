@@ -15,7 +15,7 @@ namespace UI::Misc
 			{
 				ImGui::TableSetColumnIndex(0);
 				{
-					const char* forceLodComboItems[] = { "Default", "0", "1", "2", "3", "4" };
+					const char* forceLodComboItems[] = { "Default", "0", "1", "2", "3" };
 					if (DrawComboBox("Force LOD", "##ForceLOD", forceLodComboItems, 6, &forceLod))
 					{
 						Game::CarLod = forceLod - 1;
@@ -27,24 +27,11 @@ namespace UI::Misc
 				{
 					DrawCheckBox("Draw HUD", &Game::DrawFE);
 				}
-
-				ImGui::TableSetColumnIndex(2);
-				{
-					ImGui::Text(" ");
-					ImGui::IncCursorPosX(20);
-					ImGui::Checkbox("Force rain", Game::ForceRain);
-				}
 			}
 
 			ImGui::TableNextRow();
 			{
 				ImGui::TableSetColumnIndex(0);
-				{
-					ImGui::Text("");
-					ImGui::SliderFloat("Steer angle", Game::FrontSteerAngle, -60.0, 60.0, "%.f");
-				}
-
-				ImGui::TableSetColumnIndex(1);
 				{
 					ImGui::Text("");
 					ImGui::SliderFloat("Game speed", &Game::Speed, 0.01f, 1.0f, "%.3f");
